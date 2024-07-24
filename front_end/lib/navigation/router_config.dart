@@ -1,4 +1,5 @@
 import 'package:genix_auctions/features/homepage/presentation/home_page.dart';
+import 'package:genix_auctions/features/login/presentation/login_page.dart';
 import 'package:go_router/go_router.dart';
 
 class MyRouterConfig {
@@ -10,6 +11,12 @@ class MyRouterConfig {
         path: "/home",
         builder: (context, state) {
           return const MyHomePage(title: "Genix Auction");
+        },
+      ),
+      GoRoute(
+        path: "/login",
+        builder: (context, state) {
+          return const LoginPage();
         },
       ),
     ],
