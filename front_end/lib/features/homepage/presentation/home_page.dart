@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:genix_auctions/features/homepage/components/navi_bar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
 class MyHomePage extends StatefulWidget {
@@ -15,35 +16,15 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int count = 10;
-  List data = [];
+  int data = 0;
 
-  Future<List<dynamic>> fetchItems() async {
-    final response = await http.get(
-      Uri.parse('http://localhost:3000/api/v1/items'),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load items');
-    }
-  }
-
-  getList() async {
-    await fetchItems().then((value) {
-      setState(() {
-        data = value;
-      });
-    });
-
-    // print(data);
-  }
+  final ItemsProvider _itemsProvider = ItemsProvider();
+  Stream<List<dynamic>>? itemsStream;
 
   @override
   void initState() {
     super.initState();
-
-    getList();
+    itemsStream = _itemsProvider.fetchItemsStream();
   }
 
   @override
@@ -165,109 +146,134 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 SizedBox(
                   height: count * 57,
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 5,
-                      mainAxisSpacing: 8.0,
-                      crossAxisSpacing: 8.0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 180, vertical: 10),
-                    itemCount: count > data.length ? data.length : count,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color.fromARGB(255, 0, 0, 0)
-                                  .withOpacity(0.5),
-                              spreadRadius: 1,
-                              blurRadius: 5,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
+                  child: StreamBuilder(
+                    stream: itemsStream,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No items found'));
+                      } else {
+                        data = snapshot.data!.length;
+                        print("${data} : ${count}");
+                        return GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 5,
+                            mainAxisSpacing: 8.0,
+                            crossAxisSpacing: 8.0,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 180, vertical: 10),
+                          itemCount: count > snapshot.data!.length
+                              ? snapshot.data!.length
+                              : count,
+                          itemBuilder: (context, index) {
+                            return InkWell(
+                              onTap: () => context.go(
+                                  '/itemDetails/${snapshot.data![index]['_id']}'),
                               child: Container(
-                                height: 70,
+                                height: 60,
                                 decoration: BoxDecoration(
-                                  color: Colors.amber,
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color.fromARGB(255, 0, 0, 0)
+                                          .withOpacity(0.5),
+                                      spreadRadius: 1,
+                                      blurRadius: 5,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                            Text(data[index]['name']),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text("Minimum bid"),
-                                  Text("\$ ${data[index]['minimumBid']}"),
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 10),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text("Current bid"),
-                                  Text("\$ ${data[index]['currentBid']}"),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 15),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10),
-                              child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.bottomLeft,
-                                    end: Alignment.topRight,
-                                    colors: [
-                                      Color.fromARGB(255, 87, 71, 255),
-                                      Color.fromARGB(255, 80, 179, 255),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 10),
-                                  child: Center(
-                                    child: Text(
-                                      "Bid now",
-                                      style: TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 255, 255, 255),
-                                        fontFamily: "Outfit",
+                                child: Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                        height: 70,
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber,
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                        ),
                                       ),
                                     ),
-                                  ),
+                                    Text(snapshot.data![index]['name']),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text("Minimum bid"),
+                                          Text(
+                                              "\$ ${snapshot.data![index]['minimumBid']}"),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text("Current bid"),
+                                          Text(
+                                              "\$ ${snapshot.data![index]['currentBid']}"),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 15),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 10),
+                                      child: Container(
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            begin: Alignment.bottomLeft,
+                                            end: Alignment.topRight,
+                                            colors: [
+                                              Color.fromARGB(255, 87, 71, 255),
+                                              Color.fromARGB(255, 80, 179, 255),
+                                            ],
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                        ),
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 8, horizontal: 10),
+                                          child: Center(
+                                            child: Text(
+                                              "Bid now",
+                                              style: TextStyle(
+                                                color: Color.fromARGB(
+                                                    255, 255, 255, 255),
+                                                fontFamily: "Outfit",
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
                                 ),
                               ),
-                            )
-                          ],
-                        ),
-                      );
+                            );
+                          },
+                        );
+                      }
                     },
                   ),
                 ),
-                count < data.length
+                count > data
                     ? Padding(
                         padding: const EdgeInsets.only(bottom: 100),
                         child: InkWell(
@@ -438,5 +444,23 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
+  }
+}
+
+class ItemsProvider {
+  Stream<List<dynamic>> fetchItemsStream() async* {
+    while (true) {
+      final response = await http.get(
+        Uri.parse('http://localhost:3000/api/v1/items'),
+      );
+
+      if (response.statusCode == 200) {
+        yield jsonDecode(response.body);
+      } else {
+        throw Exception('Failed to load items');
+      }
+
+      await Future.delayed(const Duration(seconds: 10));
+    }
   }
 }

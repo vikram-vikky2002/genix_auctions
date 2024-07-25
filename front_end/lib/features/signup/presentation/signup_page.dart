@@ -6,38 +6,39 @@ import 'package:genix_auctions/features/homepage/components/navi_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<SignUpPage> createState() => _SignUpPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _SignUpPageState extends State<SignUpPage> {
+  TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
 
-  Future<void> loginUser() async {
+  Future<void> signupUser() async {
     final response = await http.post(
-      Uri.parse('http://localhost:3000/api/v1/auth/login'),
+      Uri.parse('http://localhost:3000/api/v1/auth/signup'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(
-          {'email': emailController.text, 'password': passwordController.text}),
+      body: jsonEncode({
+        'name': nameController.text,
+        'email': emailController.text,
+        'password': passwordController.text
+      }),
     );
 
-    if (response.statusCode == 200) {
-      final jsonResponse = jsonDecode(response.body);
-      final token = jsonResponse['token'];
-      print("token : $token");
-      // Save the token for authenticated requests and navigate to the main screen
-      // Save token in shared_preferences or similar
-      context.go('/home');
+    if (response.statusCode == 201) {
+      // Navigate to the login screen after successful signup
+      context.go('/login');
     } else {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to login')),
+        const SnackBar(content: Text('Failed to signup')),
       );
     }
   }
@@ -67,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
             padding: const EdgeInsets.only(
               top: 120,
               left: 190,
-              bottom: 120,
+              bottom: 80,
             ),
             child: BlurryContainer(
               child: Container(
@@ -81,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
-                      "Login",
+                      "SignUp",
                       style: TextStyle(
                         fontFamily: "Outfit-Bold",
                         fontSize: 22,
@@ -90,12 +91,37 @@ class _LoginPageState extends State<LoginPage> {
                     const Padding(
                       padding: EdgeInsets.all(12),
                       child: Text(
-                        "Welcome back ! Enter your credentials to access your account",
+                        "New Bidders ! as soon as you have submitted your details \nyou will be eligible to bid in the auction.",
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             fontFamily: "Outfit",
                             fontSize: 12,
                             color: Color.fromARGB(255, 98, 98, 98)),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 10,
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        child: TextField(
+                          controller: nameController,
+                          decoration: InputDecoration(
+                              labelText: 'Enter your name',
+                              labelStyle: const TextStyle(
+                                fontFamily: 'Outfit',
+                                fontSize: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                gapPadding: 4,
+                              ),
+                              filled: true,
+                              fillColor:
+                                  const Color.fromARGB(130, 255, 212, 172)),
+                        ),
                       ),
                     ),
                     Padding(
@@ -151,26 +177,33 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          InkWell(
-                            onTap: () {},
-                            child: const Text(
-                              'Forgot your password ?',
-                              style: TextStyle(
+                        horizontal: 40,
+                        vertical: 10,
+                      ),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.85,
+                        child: TextField(
+                          controller: confirmPasswordController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                              labelText: 'confirm password',
+                              labelStyle: const TextStyle(
                                 fontFamily: 'Outfit',
-                                fontSize: 13,
+                                fontSize: 12,
                               ),
-                            ),
-                          ),
-                        ],
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                gapPadding: 4,
+                              ),
+                              filled: true,
+                              fillColor:
+                                  const Color.fromARGB(130, 255, 212, 172)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     InkWell(
-                      onTap: loginUser,
+                      onTap: signupUser,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 90),
                         child: Container(
@@ -181,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(vertical: 10),
                               child: Text(
-                                'Sign In',
+                                'Sign Up',
                                 style: TextStyle(
                                   fontFamily: 'Outfit',
                                   fontSize: 14,
@@ -198,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Don't have an account ?",
+                          "Already have an account ?",
                           style: TextStyle(
                             fontFamily: 'Outfit',
                             fontSize: 14,
@@ -207,9 +240,9 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(width: 10),
                         InkWell(
-                          onTap: () => context.go('/signup'),
+                          onTap: () => context.go('/login'),
                           child: const Text(
-                            "Sign Up",
+                            "Sign In",
                             style: TextStyle(
                               fontFamily: 'Outfit-Bold',
                               fontSize: 14,

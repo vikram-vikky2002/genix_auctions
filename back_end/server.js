@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 // const authRoutes = require('./routes/auth');
 // const resetRoutes = require('./routes/reset');
 // const itemRoutes = require('./routes/items');
@@ -40,6 +42,15 @@ const itemSchema = new mongoose.Schema({
 
 const Item = mongoose.model('Item', itemSchema);
 
+const userSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+});
+
+const User = mongoose.model('User', userSchema);
+
 app.get('/api/v1/items', async (req, res) => {
     try {
         const items = await Item.find({});
@@ -58,6 +69,49 @@ app.post('/api/v1/items', async (req, res) => {
         res.status(400).json({ message: 'Error creating item', error });
     }
 });
+
+app.get('/api/v1/items/:id', async (req, res) => {
+    try {
+        const item = await Item.findById(req.params.id);
+        if (item) {
+        res.json(item);
+        } else {
+            res.status(404).json({ message: 'Item not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching item' });
+    }
+});
+
+// User signup
+app.post('/api/v1/auth/signup', async (req, res) => {
+    const { name, email, password } = req.body;
+    const user = await User.findById(email);
+    if (user) return res.status(400).json({ message: 'User already exists' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({_id: email, name, email, password: hashedPassword });
+
+    try {
+        await newUser.save();
+        res.status(201).json({ message: 'User created successfully' });
+    } catch (error) {
+        res.status(400).json({ message: 'Error creating user' });
+    }
+});
+
+// User login
+app.post('/api/v1/auth/login', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findById(email);
+    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).json({ message: 'Invalid email or password' });
+
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    res.json({ token });
+});
+
 
 // Routes
 // app.use('/api/v1/auth', authRoutes);
