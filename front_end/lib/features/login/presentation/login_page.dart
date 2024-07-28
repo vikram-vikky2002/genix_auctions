@@ -32,11 +32,11 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       final token = jsonResponse['token'];
-      print("name : ${response.body}");
+      // print("name : ${response.body}");
       // Decode the token to get user ID
       Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
       String userId = decodedToken['_id'];
-      print("userID : $userId");
+      // print("userID : $userId");
 
       // Save the token and user ID for future use
       await saveUserCredentials(token, userId, jsonResponse['userName']);

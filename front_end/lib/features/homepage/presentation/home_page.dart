@@ -29,7 +29,7 @@ class _MyHomePageState extends State<MyHomePage> {
         user = val;
       });
     });
-    print(user);
+    // print(user);
   }
 
   @override
