@@ -1,6 +1,7 @@
 import 'package:genix_auctions/features/detailed_items/presentation/item_details.dart';
 import 'package:genix_auctions/features/homepage/presentation/home_page.dart';
 import 'package:genix_auctions/features/login/presentation/login_page.dart';
+import 'package:genix_auctions/features/profile/profile_page.dart';
 import 'package:genix_auctions/features/signup/presentation/signup_page.dart';
 import 'package:go_router/go_router.dart';
 
@@ -25,6 +26,12 @@ class MyRouterConfig {
         path: "/signup",
         builder: (context, state) {
           return const SignUpPage();
+        },
+      ),
+      GoRoute(
+        path: "/profile",
+        builder: (context, state) {
+          return ProfileScreen();
         },
       ),
       GoRoute(

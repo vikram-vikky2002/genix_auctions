@@ -1,13 +1,18 @@
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
+import 'package:genix_auctions/core/shared_preference.dart';
 import 'package:genix_auctions/features/homepage/components/navi_buttons.dart';
+import 'package:genix_auctions/features/homepage/presentation/home_page.dart';
 import 'package:go_router/go_router.dart';
 
 class MyNavigationBar extends StatelessWidget {
-  const MyNavigationBar({super.key});
+  const MyNavigationBar({super.key, this.user});
+
+  final String? user;
 
   @override
   Widget build(BuildContext context) {
+    print(user);
     return Stack(
       children: [
         BlurryContainer(
@@ -57,59 +62,69 @@ class MyNavigationBar extends StatelessWidget {
                       subItems: ["Sub Bidding 1", "Sub Bidding 2"]),
                   const NavigationButton(text: "About us"),
                   const SizedBox(width: 14),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 15,
-                        ),
-                        child: InkWell(
-                          onTap: () => context.go('/login'),
-                          child: const Text(
-                            "Login",
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 29, 51, 255),
-                              fontFamily: "Outfit-Bold",
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 5,
-                        ),
-                        child: InkWell(
-                          onTap: () => context.go('/signup'),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.bottomLeft,
-                                end: Alignment.topRight,
-                                colors: [
-                                  Color.fromARGB(255, 87, 71, 255),
-                                  Color.fromARGB(255, 80, 179, 255),
-                                ],
+                  user == null
+                      ? Row(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 15,
                               ),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 10),
-                              child: Text(
-                                "Get Started",
-                                style: TextStyle(
-                                  color: Color.fromARGB(255, 255, 255, 255),
-                                  fontFamily: "Outfit",
+                              child: InkWell(
+                                onTap: () => context.go('/login'),
+                                child: const Text(
+                                  "Login",
+                                  style: TextStyle(
+                                    color: Color.fromARGB(255, 29, 51, 255),
+                                    fontFamily: "Outfit-Bold",
+                                  ),
                                 ),
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 8,
+                                horizontal: 5,
+                              ),
+                              child: InkWell(
+                                onTap: () => context.go('/signup'),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      begin: Alignment.bottomLeft,
+                                      end: Alignment.topRight,
+                                      colors: [
+                                        Color.fromARGB(255, 87, 71, 255),
+                                        Color.fromARGB(255, 80, 179, 255),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 10),
+                                    child: Text(
+                                      "Get Started",
+                                      style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 255, 255, 255),
+                                        fontFamily: "Outfit",
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : InkWell(
+                          onTap: () => context.go('/profile'),
+                          child: Container(
+                            height: 30,
+                            width: 30,
+                            color: Colors.amber,
                           ),
-                        ),
-                      ),
-                    ],
-                  )
+                        )
                 ],
               ),
             ],

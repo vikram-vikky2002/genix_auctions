@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
+import 'package:genix_auctions/core/shared_preference.dart';
 import 'package:genix_auctions/features/homepage/components/navi_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -30,7 +32,14 @@ class _LoginPageState extends State<LoginPage> {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       final token = jsonResponse['token'];
-      print("token : $token");
+      print("name : ${response.body}");
+      // Decode the token to get user ID
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      String userId = decodedToken['_id'];
+      print("userID : $userId");
+
+      // Save the token and user ID for future use
+      await saveUserCredentials(token, userId, jsonResponse['userName']);
       // Save the token for authenticated requests and navigate to the main screen
       // Save token in shared_preferences or similar
       context.go('/home');

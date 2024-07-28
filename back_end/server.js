@@ -28,6 +28,12 @@ db.once('open', () => {
 });
 
 
+const bidHistorySchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    bidValue: { type: Number, required: true },
+    date: { type: Date },
+});
+
 const itemSchema = new mongoose.Schema({
     name: { type: String, required: true },
     minimumBid: { type: Number, required: true },
@@ -38,18 +44,53 @@ const itemSchema = new mongoose.Schema({
     seller: { type: String, required: true },
     endDate: { type: Date, required: true },
     status: { type: String, required: true },
+    history: { type: [bidHistorySchema], default: [] }
 });
+
+
+// const itemSchema = new mongoose.Schema({
+//     name: { type: String, required: true },
+//     minimumBid: { type: Number, required: true },
+//     currentBid: { type: Number, required: true },
+//     description: { type: String, required: true },
+//     image: { type: String, required: true },
+//     category: { type: String, required: true },
+//     seller: { type: String, required: true },
+//     endDate: { type: Date, required: true },
+//     status: { type: String, required: true },
+// });
 
 const Item = mongoose.model('Item', itemSchema);
 
+const transactionSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    bidValue: { type: Number, required: true },
+    date: { type: Date },
+});
+
 const userSchema = new mongoose.Schema({
-    _id: { type: String, required: true },
+    _id: { type: String, required: true }, // Use email as the ID
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    contact: { type: String, default: '' },
+    age: { type: Number, default: 0 },
+    gender: { type: String, default: '' },
+    transactions: { type: [transactionSchema], default: [] }
 });
 
 const User = mongoose.model('User', userSchema);
+
+function auth(req, res, next) {
+    const token = req.header('Authorization');
+    if (!token) return res.status(401).json({ message: 'Access denied. No token provided.' });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
+        next();
+    } catch (ex) {
+        res.status(400).json({ message: 'Invalid token.' });
+    }
+}
 
 app.get('/api/v1/items', async (req, res) => {
     try {
@@ -83,6 +124,53 @@ app.get('/api/v1/items/:id', async (req, res) => {
     }
 });
 
+// POST route for bidding
+app.post('/api/v1/items/:id/bid', async (req, res) => {
+    const { id } = req.params;
+    const { name, bidValue, date, userEmail } = req.body; // Assume userEmail is included in the request body
+
+    try {
+        console.log('Received date:', date);
+        // Parse the date string to a JavaScript Date object
+        const parsedDate = new Date(date);
+        console.log('Parsed date:', parsedDate);
+        if (isNaN(parsedDate.getTime())) {
+            return res.status(400).json({ message: 'Invalid date format' });
+        }
+
+        // Find the item by ID
+        const item = await Item.findById(id);
+        if (!item) {
+            return res.status(404).json({ message: 'Item not found' });
+        }
+
+        // Validate the bid value
+        if (bidValue <= item.currentBid) {
+            return res.status(400).json({ message: 'Bid value must be higher than the current bid' });
+        }
+
+        // Update the item's bid history and current bid
+        item.history.push({ name, bidValue, date: parsedDate });
+        item.currentBid = bidValue;
+        await item.save();
+
+        // Find the user by email
+        const user = await User.findById(userEmail);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update the user's transactions
+        user.transactions.push({ title: item.name, bidValue, date: parsedDate });
+        await user.save();
+
+        res.status(200).json(item);
+    } catch (error) {
+        console.error('Error processing bid:', error);
+        res.status(500).json({ message: 'Error processing bid', error: error.message });
+    }
+});
+
 // User signup
 app.post('/api/v1/auth/signup', async (req, res) => {
     const { name, email, password } = req.body;
@@ -109,14 +197,40 @@ app.post('/api/v1/auth/login', async (req, res) => {
     if (!validPassword) return res.status(400).json({ message: 'Invalid email or password' });
 
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token });
+    const userName = user.name
+    res.json({ token, userName });
 });
 
+// Get user profile
+app.get('/api/v1/profile', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-// Routes
-// app.use('/api/v1/auth', authRoutes);
-// app.use('/api/v1/reset', resetRoutes);
-// app.use('/api/v1/items', itemRoutes);
+        res.json(user);
+        } catch (error) {
+        res.status(500).json({ message: 'Error fetching user profile' });
+        }
+    });
+
+    // Update user profile
+    app.put('/api/v1/profile', auth, async (req, res) => {
+        const { name, contact, age, gender } = req.body;
+
+        try {
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user._id,
+            { name, contact, age, gender },
+            { new: true }
+        );
+
+        if (!updatedUser) return res.status(404).json({ message: 'User not found' });
+
+        res.json(updatedUser);
+        } catch (error) {
+        res.status(500).json({ message: 'Error updating user profile' });
+        }
+    });
 
 // Listeners
 app.listen(port, () => {
