@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:genix_auctions/profile_page.dart';
-import 'package:genix_auctions/service/logout.dart';
 
 class Avatar extends StatelessWidget {
   final String imageUrl;
@@ -9,7 +8,7 @@ class Avatar extends StatelessWidget {
   const Avatar({
     super.key,
     required this.imageUrl,
-    this.radius = 15.0,
+    this.radius = 20.0,
   });
 
   @override
@@ -20,10 +19,12 @@ class Avatar extends StatelessWidget {
             MaterialPageRoute(builder: (context) => const ProfilePage()));
       },
       child: CircleAvatar(
-        radius: radius,
-        // backgroundImage: NetworkImage(imageUrl),
-        backgroundColor: Colors.blue,
-      ),
+          radius: radius,
+          // backgroundColor: Colors.blue,
+          child: const Padding(
+            padding: EdgeInsets.all(5),
+            child: Image(image: AssetImage('./assets/contact.png')),
+          )),
     );
   }
 }

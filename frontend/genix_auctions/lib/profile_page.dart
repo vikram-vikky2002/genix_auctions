@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:genix_auctions/core/widgets/product_list_page.dart';
 import 'package:genix_auctions/service/logout.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -80,10 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ListTile(
               leading: const Icon(Icons.gavel),
               title: const Text('My Bids'),
-              onTap: () {
-                // Navigate to my bids page
-                Navigator.pushNamed(context, '/my-bids');
-              },
+              onTap: () => context.go("/user-bids"),
             ),
             const Divider(),
             ListTile(

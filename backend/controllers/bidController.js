@@ -1,5 +1,7 @@
 const Bid = require('../models/bid')
+const bidUserSchema = require('../models/bid_user')
 const Product = require('../models/product')
+const User = require('../models/user')
 // const { sendNotification } = require('../utils/sendNotification')
 
 const addBid = async (req, res) => {
@@ -37,6 +39,17 @@ const addBid = async (req, res) => {
     product.currentBidPrice = price
 
     await product.save()
+
+    // Find the user and add the bid to their bids array
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const userBid = { price: price, productName: product.title, time: new Date() };
+
+    user.bids.push(userBid);
+    await user.save();
 
     // Notify all connected clients about the new bid
     // newBid(newBid)

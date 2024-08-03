@@ -1,7 +1,10 @@
 import "package:flutter/material.dart";
+import "package:genix_auctions/forgot_password.dart";
+import "package:genix_auctions/my_bids.dart";
 import "package:genix_auctions/product_page.dart";
 import "package:genix_auctions/home_page.dart";
 import "package:genix_auctions/login_page.dart";
+import "package:genix_auctions/reset_password.dart";
 import "package:genix_auctions/signup_page.dart";
 import "package:genix_auctions/successful_page.dart";
 import "package:go_router/go_router.dart";
@@ -66,6 +69,26 @@ List<RouteBase> routesList = [
     builder: (context, state) {
       final String id = state.pathParameters['id']!;
       return CProduct(id: id);
+    },
+  ),
+  GoRoute(
+    path: "/user-bids",
+    builder: (context, state) {
+      return BidsPage();
+    },
+  ),
+  GoRoute(
+    path: "/forgot-password",
+    builder: (context, state) {
+      return const ForgotPasswordPage();
+    },
+  ),
+  GoRoute(
+    path: "/reset-password/:id",
+    builder: (context, state) {
+      return ResetPasswordPage(
+        token: state.pathParameters['id']!,
+      );
     },
   ),
   // GoRoute(

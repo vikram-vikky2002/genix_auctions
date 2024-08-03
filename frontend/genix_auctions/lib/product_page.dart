@@ -6,7 +6,6 @@ import 'package:genix_auctions/core/theme/app_pallete.dart';
 import 'package:genix_auctions/core/widgets/auction_panel.dart';
 import 'package:genix_auctions/core/widgets/nav_bar.dart';
 import 'package:genix_auctions/core/widgets/review_widget.dart';
-import 'package:genix_auctions/service/log.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:genix_auctions/model/auction_model.dart';

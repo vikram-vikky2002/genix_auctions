@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:genix_auctions/bloc/user_session_bloc.dart';
-import 'package:genix_auctions/bloc/user_session_event.dart';
 import 'package:genix_auctions/core/theme/app_pallete.dart';
 import 'package:genix_auctions/core/widgets/nav_bar.dart';
 import 'package:genix_auctions/core/widgets/snack_bar.dart';
@@ -199,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ],
                               ),
                               TextButton(
-                                onPressed: () {},
+                                onPressed: () => context.go('/forgot-password'),
                                 child: const Text('Forgot Password'),
                               ),
                             ],
