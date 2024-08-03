@@ -17,10 +17,7 @@ This application is designed to demonstrate the ability to design, implement, an
 
 ## Technologies Used
 
-<img src="./frontend/genix_auctions/assets/mongodb-logo.png" alt="MongoDB Logo"  height="80">
-<img src="./frontend/genix_auctions/assets/express.png" alt="Express Logo" height="60">
-<img src="./frontend/genix_auctions/assets/nodejs.jpg" alt="NodeJs Logo" height="70">
-<img src="./frontend/genix_auctions/assets/Google-flutter-logo.svg.png" alt="Flutter Logo" height="50">
+<img src="./frontend/genix_auctions/assets/cover.png" alt="Technologies">
 
 ## Features
 
